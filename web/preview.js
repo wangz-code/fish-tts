@@ -1,9 +1,12 @@
 const express = require("express");
 const { createProxyMiddleware } = require("http-proxy-middleware");
+const path = require("path");
 const fs = require("fs").promises; // 使用 promise 版本的 fs API
+const fsa = require("fs"); // 使用 promise 版本的 fs API
 const glob = require("glob-promise"); // 用于模式匹配文件路径
 const https = require("https"); // 引入 HTTPS 模块
 const http = require("http"); // 引入 HTTP 模块
+const morgan = require("morgan");
 const app = express();
 const router = express.Router();
 const port = 2334;
@@ -64,7 +67,19 @@ router.use("/fish", createProxyMiddleware({ target: "http://127.0.0.1:2333", cha
 app.use(express.static("./"));
 app.use("/api", router);
 
+const logInit = async function () {
+    // 创建日志目录
+    const logDirectory = path.join(__dirname, "logs");
+    fsa.existsSync(logDirectory) || fsa.mkdirSync(logDirectory);
+    // 按日期创建日志文件
+    const accessLogStream = fsa.createWriteStream(path.join(logDirectory, `access_${new Date().toISOString().split("T")[0]}.log`), { flags: "a" });
+    // 同时输出到控制台和文件
+    app.use(morgan("combined", { stream: accessLogStream }));
+    app.use(morgan("dev"));
+};
+
 const httpRun = async function () {
+    logInit();
     const httpServer = http.createServer(app);
     httpServer.listen(port, () => {
         console.log(`HTTP 服务器运行在端口 ${port}`);
