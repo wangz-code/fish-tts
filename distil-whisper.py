@@ -59,7 +59,7 @@ def main():
         print(f"已成功写入: {text_path}")
 
         shutil.copy2("/home/wz/program/distil-whisper/audio.wav",audio_path)  # 使用 copy2 保留元数据
-        print(f"成功复制文件到: {audio_path}")
+        print(f"成功复制到: {audio_path}")
         return 0
     except Exception as e:
         print(f"错误：写入文件失败: {str(e)}")
