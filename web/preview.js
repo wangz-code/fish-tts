@@ -78,32 +78,34 @@ const logInit = async function () {
     app.use(morgan("dev"));
 };
 
-const httpRun = async function () {
-    logInit();
-    const httpServer = http.createServer(app);
-    httpServer.listen(port, () => {
-        console.log(`HTTP 服务器运行在端口 ${port}`);
-    });
-};
-
-// 启动应用
-httpRun();
-
-// const httpsRun = async function () {
-//     let credentials;
-//     try {
-//         const [key, cert] = await Promise.all([
-//             fs.readFile("/home/wz/ssl/wz.djgo.cc.key"), // 替换为你的证书
-//             fs.readFile("/home/wz/ssl/wz.djgo.cc.crt"), // 替换为你的证书
-//         ]);
-
-//         credentials = { key, cert };
-//     } catch (error) {
-//         console.error("加载证书失败:", error);
-//         process.exit(1);
-//     }
-//     const httpsServer = https.createServer(credentials, app);
-//     httpsServer.listen(port, () => {
-//         console.log(`HTTPS 服务器运行在端口 ${port}`);
+// const httpRun = async function () {
+//     logInit();
+//     const httpServer = http.createServer(app);
+//     httpServer.listen(port, () => {
+//         console.log(`HTTP 服务器运行在端口 ${port}`);
 //     });
 // };
+
+// // 启动应用
+// httpRun();
+
+const httpsRun = async function () {
+    logInit();
+    let credentials;
+    try {
+        const [key, cert] = await Promise.all([
+            fs.readFile("/home/wz/ssl/wz.djgo.cc.key"), // 替换为你的证书
+            fs.readFile("/home/wz/ssl/wz.djgo.cc.crt"), // 替换为你的证书
+        ]);
+
+        credentials = { key, cert };
+    } catch (error) {
+        console.error("加载证书失败:", error);
+        process.exit(1);
+    }
+    const httpsServer = https.createServer(credentials, app);
+    httpsServer.listen(port, () => {
+        console.log(`HTTPS 服务器运行在端口 ${port}`);
+    });
+};
+httpsRun();

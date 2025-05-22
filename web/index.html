@@ -17,9 +17,8 @@
         <script src="./js/vue.global.js"></script>
         <style>
             .mt-col {
-                margin-top: 4%;
+                margin-top: 20px;
             }
-
             .flex {
                 display: flex;
             }
@@ -112,7 +111,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <textarea class="form-input mt-2" id="input-example-3" placeholder="Textarea" rows="6" v-model="text"></textarea>
+                                    <textarea class="form-input mt-2" id="input-example-3" placeholder="Textarea" rows="3" v-model="text"></textarea>
                                 </div>
                             </div>
                             <div class="card-footer flex item-center">
@@ -161,12 +160,12 @@
                     let ws = null;
                     let wsDemo = null;
                     const demoText = ref([]);
-                    const text = ref("你可能在超市见过那种机器压出来的卡通馒头，颜色鲜艳造型完美，但总有人排队买隔壁大妈手捏的丑馒头——歪歪扭扭的荠菜团子，蒸裂口的红糖开花馍。这就是人味儿的力量。我见过AI写的悼亡诗，格式工整得能当尺子用，但比不上朋友在葬礼上那句颤抖的「妈，你种的蓝雪花开了」。文字真正的价值，在于它像指纹一样嵌着你的人生褶皱。");
+                    const text = ref("今天我将为大家朗读一段《哈姆雷特》中的经典独白。我想以此篇献给所有在迷雾中砥砺前行的朋友们。你这一生中的谜，必须要用其他的谜才能解开，就像有的梦必须穿过其他的梦才能醒来。你必须一个一个地走过，才能走出这场连环梦。生存还是毁灭，这是一个值得考虑的问题。默然忍受命运的暴虐的毒箭，还是挺身反抗人世无涯的苦难，在奋斗中结束一切。");
                     const voice = ref([]);
                     const audioSrc = ref("");
                     const loading = ref(false);
                     const config = reactive({
-                        voice: "fishtts女声",
+                        voice: "董卿_诗句",
                         seed: 1,
                     });
                     const ax = axios.create({
