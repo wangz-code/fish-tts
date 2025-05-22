@@ -1,0 +1,19 @@
+{
+  "name": "web",
+  "version": "1.0.0",
+  "main": "",
+  "scripts": {
+    "dev": "vite"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "express": "^5.1.0",
+    "glob-promise": "^6.0.7",
+    "http-proxy-middleware": "^3.0.5"
+  },
+  "devDependencies": {
+    "prettier": "^3.5.3"
+  }
+}

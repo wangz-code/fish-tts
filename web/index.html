@@ -1,0 +1,270 @@
+<!--
+ * @Author: wangqz
+ * @Date: 2025-05-15
+ * @LastEditTime: 2025-05-22
+ * @Description: content
+-->
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Fish Speech</title>
+
+        <link href="./css/spectre.min.css" rel="stylesheet" />
+        <link href="./css/spectre-exp.min.css" rel="stylesheet" />
+        <link href="./css/spectre-icons.min.css" rel="stylesheet" />
+        <script src="./js/vue.global.js"></script>
+        <style>
+            .mt-col {
+                margin-top: 4%;
+            }
+
+            .flex {
+                display: flex;
+            }
+            .item-center {
+                align-items: center;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div id="vapp">
+            <div class="container">
+                <div class="columns mt-col">
+                    <div class="column col-2"></div>
+                    <div class="column col-8 col-sm-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-title h5">Fish Speech TTS</div>
+                                <div class="card-subtitle text-gray">
+                                    使用fish-speech作为 tts 后端, 推理显卡是cmp40hx, 参考语音为豆包的两段对话
+                                </div>
+                                <div class="card-subtitle text-info text-ellipsis">
+                                    <div>
+                                        TTS 项目地址:
+                                        <a href="https://github.com/fishaudio/fish-speech">
+                                            https://github.com/fishaudio/fish-speech
+                                        </a>
+                                    </div>
+                                    <div>
+                                        豆包语音地址:
+                                        <a href="https://bytedancespeech.github.io/seedtts_tech_report">
+                                            https://bytedancespeech.github.io/seedtts_tech_report
+                                        </a>
+                                    </div>
+
+                                    <div class="mt-2">
+                                        <div>
+                                            1.各大视频平台找到媒体使用 yt-dlp下载, 提取比较好的样本截取 90 秒转成wav (fishtts最多限制90秒)
+
+                                            <div>
+                                                <div class="text-gray">
+                                                    mp4文件 从第三秒开始(-ss 00:00:03) 时长(-t 90)秒 移除视频流(-vn) 音频采样率(-ar 16000) 声道(-ac 1) 单声道体积会小一些
+                                                </div>
+                                                <code>
+                                                    ffmpeg -i input.mp4 -ss 00:00:03 -t 90 -vn -ar 16000 -ac 1 audio.wav
+                                                </code>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            2.使用spleeter模型分离人声和伴奏 <a href="https://github.com/deezer/spleeter">https://github.com/deezer/spleeter</a>
+                                            <div>
+                                                <code>
+                                                    separate -p spleeter:2stems -o output audio.wav
+                                                </code>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            3.使用distil-whisper模型将音频转成文字, 再使用豆包修正错别字 放在fish-tts/references目录下
+                                            <div>
+                                                <code>
+                                                    https://huggingface.co/BELLE-2/Belle-whisper-large-v3-turbo-zh
+                                                </code>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <div class="columns">
+                                        <div class="column col-4 col-sm-12">
+                                            <div class="flex">
+                                                voice:
+                                                <select class="form-select ml-2" v-model="config.voice" @change="onChangeVoice">
+                                                    <option value="">请选择音色</option>
+                                                    <option v-for="item in voice" :value="item">
+                                                        {{item}}
+                                                    </option>
+                                                </select>
+                                            </div>
+                                            <div class="flex">
+                                                seed:
+                                                <input class="slider ml-2" type="range" min="0" max="100" v-model="config.seed" />
+                                            </div>
+                                        </div>
+                                        <div class="column col-4">
+                                            <div class="popover popover-top" v-for="(item,idx) in demoText">
+                                                <span class="chip" @click="text =item">
+                                                    示例{{idx}}
+                                                </span>
+                                                <div class="popover-container">
+                                                    <div class="card">
+                                                        <div class="card-body">
+                                                            {{item}}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <textarea class="form-input mt-2" id="input-example-3" placeholder="Textarea" rows="6" v-model="text"></textarea>
+                                </div>
+                            </div>
+                            <div class="card-footer flex item-center">
+                                <button :class="{'loading':loading}" class="btn btn-primary" @click="genTTS">
+                                    生成音频
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="card mt-2">
+                            <div class="card-header"></div>
+                            <div class="card-body">
+                                <div class="flex item-center">
+                                    <div>
+                                      <div class="divider" data-content="文字生成音频"></div>
+                                    </div>
+                                    <button title="下载" v-if="audioSrc && !loading" @click="downAudio" class="btn btn-sm btn-action s-circle"><i class="icon icon-downward"></i></button>
+                                </div>
+                                <div id="waveform"></div>
+                                <div class="divider" data-content="voice样本音频"></div>
+                                <div id="wsdemo"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="column col-2"></div>
+                </div>
+            </div>
+        </div>
+        <script src="./js/axios.min.js"></script>
+        <script src="./js/msgpack.min.js"></script>
+        <script src="./js/util.js"></script>
+        <script src="./js/wavesurfer.min.js"></script>
+        <script src="./js/hover.min.js"></script>
+        <script>
+            const { createApp, ref, shallowRef, effect, isReactive, reactive, unref, toRaw, onMounted } = Vue;
+            const msgpack = this.msgpack; // 创建msgpack实例
+            const msConfig = {
+                headers: {
+                    "Content-Type": "application/msgpack", // 指定请求内容类型为msgpack
+                    Accept: "application/msgpack", // 指定接受msgpack格式响应
+                },
+                responseType: "arraybuffer", // 以二进制形式接收响应
+            };
+            createApp({
+                setup() {
+                    let ws = null;
+                    let wsDemo = null;
+                    const demoText = ref([]);
+                    const text = ref("你可能在超市见过那种机器压出来的卡通馒头，颜色鲜艳造型完美，但总有人排队买隔壁大妈手捏的丑馒头——歪歪扭扭的荠菜团子，蒸裂口的红糖开花馍。这就是人味儿的力量。我见过AI写的悼亡诗，格式工整得能当尺子用，但比不上朋友在葬礼上那句颤抖的「妈，你种的蓝雪花开了」。文字真正的价值，在于它像指纹一样嵌着你的人生褶皱。");
+                    const voice = ref([]);
+                    const audioSrc = ref("");
+                    const loading = ref(false);
+                    const config = reactive({
+                        voice: "fishtts女声",
+                        seed: 0,
+                    });
+                    const ax = axios.create({
+                        baseURL: "/api",
+                        timeout: 50 * 1000,
+                    });
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+                    const getreference_id = async () => {
+                        const response = await ax.get("/getreference_id");
+                        voice.value = response.data;
+                    };
+
+                    const getreference_text = async () => {
+                        const response = await ax.get("/getreference_texts");
+                        demoText.value = response.data;
+                    };
+
+                    const onChangeVoice = () => {
+                        wsDemo.load(`/api/static/${encodeURIComponent(config.voice)}/audio.wav`);
+                    };
+
+                    const genTTS = async () => {
+                        const conf = deepClone(toRaw(config));
+                        if (!conf.voice) return;
+                        if (conf.seed == 0) conf.seed = null;
+                        if (loading.value) return;
+                        loading.value = true;
+                        const data = {
+                            text: text.value,
+                            reference_id: conf.voice,
+                            format: "mp3",
+                            max_new_tokens: 1024,
+                            chunk_length: 200,
+                            top_p: 0.7,
+                            repetition_penalty: 1.2,
+                            temperature: 0.7,
+                            streaming: false,
+                            use_memory_cache: "on",
+                            seed: conf.seed,
+                        };
+
+                        // 序列化数据为MessagePack格式
+                        const packedData = msgpack.encode(data).buffer;
+                        const response = await ax.post("/fish/v1/tts", packedData, msConfig);
+                        const blob = new Blob([response.data], { type: "audio/mp3" });
+                        audioSrc.value = URL.createObjectURL(blob);
+                        await ws.loadBlob(blob);
+                        ws.play();
+                        loading.value = false;
+                    };
+
+                    const downAudio = () => {
+                        // 创建下载链接
+                        const downloadLink = document.createElement("a");
+                        downloadLink.href = audioSrc.value;
+                        downloadLink.download = "audio.wav";
+                        document.body.appendChild(downloadLink);
+                        downloadLink.click();
+                        document.body.removeChild(downloadLink);
+                    };
+
+                    getreference_id();
+                    getreference_text();
+
+                    onMounted(() => {
+                        ws = waveSurferInit("#waveform");
+                        ws.on("interaction", () => {
+                            ws.play();
+                        });
+                        wsDemo = waveSurferInit("#wsdemo");
+                        wsDemo.on("interaction", () => {
+                            wsDemo.play();
+                        });
+                        onChangeVoice();
+                    });
+
+                    return {
+                        demoText,
+                        text,
+                        genTTS,
+                        audioSrc,
+                        loading,
+                        config,
+                        voice,
+                        onChangeVoice,
+                        downAudio,
+                    };
+                },
+            }).mount("#vapp");
+        </script>
+    </body>
+</html>
