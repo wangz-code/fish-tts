@@ -47,7 +47,7 @@ python -m tools.api_server \
 ffmpeg -i input.mp4 -ss 00:00:03 -t 90 -vn -ar 16000 -ac 1 audio.wav
 
 # 2.使用spleeter模型分离人声和伴奏 https://github.com/deezer/spleeter
-separate -p spleeter:2stems -o output audio.wav
+spleeter separate  -p spleeter:2stems -o output audio.wav
 
 # 3.使用distil-whisper模型将音频转成文字, 再使用豆包修正错别字 放在fish-tts/references目录下
 https://huggingface.co/BELLE-2/Belle-whisper-large-v3-turbo-zh
