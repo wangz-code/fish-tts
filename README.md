@@ -24,6 +24,21 @@ npm run dev
 node preview.js
 ```
 
+## fish服务端 教程 https://speech.fish.audio
+```sh
+HF_ENDPOINT=https://hf-mirror.com
+
+python -m tools.api_server \
+    --listen 0.0.0.0:2333 \
+    --llama-checkpoint-path "fish-speech/checkpoints/fish-speech-1.5" \
+    --decoder-checkpoint-path "/home/wz/program/fish-speech/checkpoints/fish-speech-1.5/firefly-gan-vq-fsq-8x1024-21hz-generator.pth" \
+    --decoder-config-name firefly_gan_vq \
+    --compile \
+    --half
+
+```
+
+
 ## 音频样本采集
 
 ```sh

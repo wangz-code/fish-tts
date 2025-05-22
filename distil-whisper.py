@@ -1,0 +1,33 @@
+'''
+Author: wangqz
+Date: 2025-05-20
+LastEditTime: 2025-05-20
+Description: content
+'''
+import torch
+from transformers import pipeline
+import os
+# 检查GPU是否可用并设置设备
+device = "cuda:0" if torch.cuda.is_available() else "cpu"
+print(f"使用设备: {device}")
+
+transcriber = pipeline(
+    "automatic-speech-recognition", 
+    model="BELLE-2/Belle-whisper-large-v3-turbo-zh",
+    device=device
+)
+
+transcriber.model.config.forced_decoder_ids = (
+  transcriber.tokenizer.get_decoder_prompt_ids(
+    language="zh", 
+    task="transcribe"
+  )
+)
+# 处理长音频（开启时间戳）
+result = transcriber("audio.wav", return_timestamps=True)
+
+# 提取文本内容，忽略时间戳
+transcription = " ".join([chunk["text"].strip() for chunk in result["chunks"]])
+
+print("完整转录结果（无时间戳）:")
+print(transcription)
