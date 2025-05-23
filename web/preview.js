@@ -11,6 +11,7 @@ const app = express();
 const router = express.Router();
 const port = 2334;
 const referenceDir = "/home/wz/program/fish-speech/references";
+const spleeterDir = "/home/wz/program/spleeter/output/audio";
 
 // 3. 新增接口：获取 reference 目录下的所有文件夹名称
 const folders_cash = [];
@@ -61,10 +62,13 @@ router.get("/getreference_texts", async (req, res) => {
 
 // 音频样本静态文件
 router.use("/static", express.static(referenceDir));
+// 人声伴奏分离文件
+router.use("/spleeter", express.static(spleeterDir));
 // fishtts server
 router.use("/fish", createProxyMiddleware({ target: "http://127.0.0.1:2333", changeOrigin: true, pathRewrite: { "^/api/fish": "" } }));
 
 app.use(express.static("./"));
+app.use(express.static(spleeterDir));
 app.use("/api", router);
 
 const logInit = async function () {
