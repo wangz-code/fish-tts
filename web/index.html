@@ -1,10 +1,10 @@
 <!--
  * @Author: wangqz
  * @Date: 2025-05-15
- * @LastEditTime: 2025-05-22
+ * @LastEditTime: 2025-05-28
  * @Description: content
 -->
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
@@ -37,21 +37,15 @@
                         <div class="card">
                             <div class="card-header">
                                 <div class="card-title h5">Fish Speech TTS</div>
-                                <div class="card-subtitle text-gray">
-                                    使用fish-speech作为 tts 后端, 推理显卡是cmp40hx, 参考语音为豆包的两段对话
-                                </div>
+                                <div class="card-subtitle text-gray"> 使用fish-speech作为 tts 后端, 推理显卡是cmp40hx, 参考语音为豆包的两段对话 </div>
                                 <div class="card-subtitle text-info text-ellipsis">
                                     <div>
                                         TTS 项目地址:
-                                        <a href="https://github.com/fishaudio/fish-speech">
-                                            https://github.com/fishaudio/fish-speech
-                                        </a>
+                                        <a href="https://github.com/fishaudio/fish-speech"> https://github.com/fishaudio/fish-speech </a>
                                     </div>
                                     <div>
                                         豆包语音地址:
-                                        <a href="https://bytedancespeech.github.io/seedtts_tech_report">
-                                            https://bytedancespeech.github.io/seedtts_tech_report
-                                        </a>
+                                        <a href="https://bytedancespeech.github.io/seedtts_tech_report"> https://bytedancespeech.github.io/seedtts_tech_report </a>
                                     </div>
 
                                     <div class="mt-2">
@@ -59,20 +53,14 @@
                                             1.各大视频平台找到媒体使用 yt-dlp下载, 提取比较好的样本截取 90 秒转成wav (fishtts最多限制90秒)
 
                                             <div>
-                                                <div class="text-gray">
-                                                    mp4文件 从第三秒开始(-ss 00:00:03) 时长(-t 90)秒 移除视频流(-vn) 音频采样率(-ar 16000) 声道(-ac 1) 单声道体积会小一些
-                                                </div>
-                                                <code>
-                                                    ffmpeg -i input.mp4 -ss 00:00:03 -t 90 -vn -ar 16000 -ac 1 audio.wav
-                                                </code>
+                                                <div class="text-gray"> mp4文件 从第三秒开始(-ss 00:00:03) 时长(-t 90)秒 移除视频流(-vn) 音频采样率(-ar 16000) 声道(-ac 1) 单声道体积会小一些 </div>
+                                                <code> ffmpeg -i input.mp4 -ss 00:00:03 -t 90 -vn -ar 16000 -ac 1 audio.wav </code>
                                             </div>
                                         </div>
                                         <div>
                                             2.使用distil-whisper模型将音频转成文字, 再使用豆包修正错别或者符号错误 放在fish-tts/references目录下
                                             <div>
-                                                <code>
-                                                    https://huggingface.co/BELLE-2/Belle-whisper-large-v3-turbo-zh
-                                                </code>
+                                                <code> https://huggingface.co/BELLE-2/Belle-whisper-large-v3-turbo-zh </code>
                                             </div>
                                         </div>
                                     </div>
@@ -86,9 +74,7 @@
                                                 voice:
                                                 <select class="form-select ml-2" v-model="config.voice" @change="onChangeVoice">
                                                     <option value="">请选择音色</option>
-                                                    <option v-for="item in voice" :value="item">
-                                                        {{item}}
-                                                    </option>
+                                                    <option v-for="item in voice" :value="item"> {{item}} </option>
                                                 </select>
                                             </div>
                                             <div class="flex">
@@ -98,14 +84,10 @@
                                         </div>
                                         <div class="column col-4">
                                             <div class="popover popover-top" v-for="(item,idx) in demoText">
-                                                <span class="chip" @click="text =item">
-                                                    示例{{idx}}
-                                                </span>
+                                                <span class="chip" @click="text =item"> 示例{{idx}} </span>
                                                 <div class="popover-container">
                                                     <div class="card">
-                                                        <div class="card-body">
-                                                            {{item}}
-                                                        </div>
+                                                        <div class="card-body"> {{item}} </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -115,9 +97,13 @@
                                 </div>
                             </div>
                             <div class="card-footer flex item-center">
-                                <button :class="{'loading':loading}" class="btn btn-primary" @click="genTTS">
-                                    生成音频
-                                </button>
+                                <button :class="{'loading':loading}" class="btn btn-primary mr-2" @click="genTTS"> 生成音频</button>
+                                <div class="form-group">
+                                    <label class="form-switch">
+                                      <input type="checkbox" v-model="isStream">
+                                      <i class="form-icon"></i> 流式(边下边播)
+                                    </label>
+                                  </div>
                             </div>
                         </div>
 
@@ -126,11 +112,12 @@
                             <div class="card-body">
                                 <div class="flex item-center">
                                     <div>
-                                      <div class="divider" data-content="文字生成音频"></div>
+                                        <div class="divider" :data-content="`文字生成音频 (${isStream?'流式':'普通'})`"></div>
                                     </div>
                                     <button title="下载" v-if="audioSrc && !loading" @click="downAudio" class="btn btn-sm btn-action s-circle"><i class="icon icon-downward"></i></button>
                                 </div>
                                 <div id="waveform"></div>
+                                <div id="streamwaveform"></div>
                                 <div class="divider" data-content="voice样本音频"></div>
                                 <div id="wsdemo"></div>
                             </div>
@@ -145,15 +132,19 @@
         <script src="./js/util.js"></script>
         <script src="./js/wavesurfer.min.js"></script>
         <script src="./js/hover.min.js"></script>
+        <script src="./js/steam.wav.js"></script>
+        <script src="./js/stream.js"></script>
         <script>
             const { createApp, ref, shallowRef, effect, isReactive, reactive, unref, toRaw, onMounted } = Vue;
             const msgpack = this.msgpack; // 创建msgpack实例
+            let accumulatedChunks = [];
+
             const msConfig = {
                 headers: {
                     "Content-Type": "application/msgpack", // 指定请求内容类型为msgpack
                     Accept: "application/msgpack", // 指定接受msgpack格式响应
                 },
-                responseType: "arraybuffer", // 以二进制形式接收响应
+                responseType: "arraybuffer", // "arraybuffer", // 以二进制形式接收响应
             };
             createApp({
                 setup() {
@@ -164,6 +155,7 @@
                     const voice = ref([]);
                     const audioSrc = ref("");
                     const loading = ref(false);
+                    const isStream = ref(true);
                     const config = reactive({
                         voice: "董卿_诗句",
                         seed: 1,
@@ -197,24 +189,29 @@
                         const data = {
                             text: text.value,
                             reference_id: conf.voice,
-                            format: "mp3",
+                            // format: "wav",
                             max_new_tokens: 1024,
                             chunk_length: 200,
                             top_p: 0.7,
                             repetition_penalty: 1.2,
                             temperature: 0.7,
-                            streaming: false,
+                            streaming: isStream.value,
                             use_memory_cache: "on",
                             seed: conf.seed,
                         };
-
+                        console.log(data);
                         // 序列化数据为MessagePack格式
                         const packedData = msgpack.encode(data).buffer;
-                        const response = await ax.post("/fish/v1/tts", packedData, msConfig);
-                        const blob = new Blob([response.data], { type: "audio/mp3" });
-                        audioSrc.value = URL.createObjectURL(blob);
-                        await ws.loadBlob(blob);
-                        ws.play();
+                        if (isStream.value) {
+                            const wavplayer = new WAVStreamPlayer({ wavesurfer: ws });
+                            wavplayer.start("/api/fish/v1/tts", packedData);
+                        } else {
+                            const response = await ax.post("/fish/v1/tts", packedData, msConfig);
+                            const blob = new Blob([response.data], { type: "audio/wav" });
+                            audioSrc.value = URL.createObjectURL(blob);
+                            await ws.loadBlob(blob);
+                            ws.play();
+                        }
                         loading.value = false;
                     };
 
@@ -253,6 +250,7 @@
                         voice,
                         onChangeVoice,
                         downAudio,
+                        isStream,
                     };
                 },
             }).mount("#vapp");

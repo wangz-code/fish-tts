@@ -26,18 +26,24 @@ node preview.js
 
 ## fish服务端 教程 https://speech.fish.audio
 ```sh
+# 服务端
 HF_ENDPOINT=https://hf-mirror.com
-
 python -m tools.api_server \
     --listen 0.0.0.0:2333 \
-    --llama-checkpoint-path "fish-speech/checkpoints/fish-speech-1.5" \
+    --llama-checkpoint-path "/home/wz/program/fish-speech/checkpoints/fish-speech-1.5" \
     --decoder-checkpoint-path "/home/wz/program/fish-speech/checkpoints/fish-speech-1.5/firefly-gan-vq-fsq-8x1024-21hz-generator.pth" \
     --decoder-config-name firefly_gan_vq \
     --compile \
     --half
 
-```
+# 客户端请求 streaming确实很快, 普通的需要20秒, 开启流式大概7秒左右就可以开始播放了
+python -m tools.api_client \
+    --url "http://127.0.0.1:2333/v1/tts" \
+    --text "我可以一顿吃下三斤牛肉，然后再吃半只烤鸭和一碗北京地道的炸酱面；还能三天三夜不睡觉，然后在雪地上像疯子一样狂跑。" \
+    --reference_id "fishtts女声" \
+    --streaming True
 
+```
 
 ## 音频样本采集
 
@@ -47,7 +53,7 @@ python -m tools.api_server \
 ffmpeg -i input.mp4 -ss 00:00:03 -t 90 -vn -ar 16000 -ac 1 audio.wav
 
 
-# 使用spleeter模型分离人声和伴奏, 如果没有效果检查下pretrained_models下模型是否存在, 感觉会丢失一些总体来说还不错
+# 使用spleeter模型分离人声和伴奏, 如果没有效果检查下pretrained_models下模型是否存在, 可能会丢失一些总体来说还不错
 # https://github.com/deezer/spleeter 
 spleeter separate  -p spleeter:2stems -o output audio.wav 
 
@@ -62,7 +68,7 @@ https://huggingface.co/BELLE-2/Belle-whisper-large-v3-turbo-zh
 
 
 
-## ![detail.png](https://raw.githubusercontent.com/wangz-code/fish-tts/main/pp.png)
+## ![detail.png](https://raw.githubusercontent.com/wangz-code/fish-tts/main/preview.png)
 
 ## 基于
 
